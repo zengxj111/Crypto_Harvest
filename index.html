@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>资产种植园 | 掌控您的财富未来</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0b172a; /* 截图中的深色背景 */
+            --bg-card: #152238;
+            --primary-green: #00b894; /* 截图中的绿色 */
+            --primary-gold: #f1c40f; /* 截图中的金色按钮 */
+            --text-white: #ffffff;
+            --text-gray: #b2bec3;
+            --border-color: #2d3436;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; }
+        body { background-color: #f5f7fa; color: #333; }
+
+        /* 通用工具类 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+        .hidden { display: none !important; }
+        .btn { cursor: pointer; border: none; padding: 10px 20px; border-radius: 4px; font-weight: bold; transition: 0.3s; }
+        .btn-gold { background: linear-gradient(to bottom, #f1c40f, #f39c12); color: #000; box-shadow: 0 4px 0 #d35400; }
+        .btn-gold:hover { transform: translateY(-2px); box-shadow: 0 6px 0 #d35400; }
+        .btn-gold:active { transform: translateY(2px); box-shadow: 0 0 0 #d35400; }
+        .btn-outline { border: 1px solid var(--text-white); background: transparent; color: white; }
+
+        /* ------ 登录注册页 ------ */
+        #auth-view {
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: var(--bg-dark);
+            background-image: radial-gradient(circle at 50% 50%, #1a2a40 0%, #0b172a 100%);
+        }
+        .auth-box {
+            background: white; padding: 40px; border-radius: 8px; width: 400px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3); text-align: center;
+        }
+        .auth-box h2 { color: var(--bg-dark); margin-bottom: 20px; }
+        .input-field { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 4px; }
+        .auth-toggle { margin-top: 15px; color: #0984e3; cursor: pointer; font-size: 0.9rem; }
+
+        /* ------ 主应用界面 ------ */
+        #app-view { display: none; }
+
+        /* 顶部导航 */
+        header { background: white; border-bottom: 1px solid #eee; position: sticky; top: 0; z-index: 100; }
+        .nav-container { display: flex; justify-content: space-between; align-items: center; height: 70px; }
+        .logo { font-size: 1.5rem; font-weight: bold; color: var(--bg-dark); display: flex; align-items: center; gap: 10px; }
+        .nav-menu { display: flex; gap: 30px; }
+        .nav-item { cursor: pointer; color: #666; font-weight: 500; padding: 5px 0; position: relative; }
+        .nav-item:hover, .nav-item.active { color: var(--primary-green); }
+        .nav-item.active::after { content:''; position: absolute; bottom: -24px; left:0; width: 100%; height: 3px; background: var(--primary-green); }
+        
+        .user-panel { display: flex; align-items: center; gap: 15px; }
+        .vip-badge { background: var(--primary-gold); color: #000; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; display: none; }
+        .vip-badge.show { display: inline-block; }
+
+        /* 英雄横幅 (Hero Section) - 复刻截图 */
+        .hero-banner {
+            background-color: var(--bg-dark);
+            color: white;
+            text-align: center;
+            padding: 80px 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero-title { font-size: 3rem; margin-bottom: 20px; }
+        .hero-title span { color: var(--primary-green); }
+        .hero-subtitle { font-size: 1.2rem; color: var(--text-gray); margin-bottom: 40px; }
+        .hero-cta { font-size: 1.2rem; padding: 15px 40px; }
+
+        /* 内容区域 */
+        .section-content { padding: 50px 0; min-height: 600px; }
+
+        /* 1. 会员订阅卡片 */
+        .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; margin-top: 30px; }
+        .price-card {
+            background: white; border: 1px solid #eee; border-radius: 10px; overflow: hidden;
+            transition: 0.3s; position: relative;
+        }
+        .price-card:hover { transform: translateY(-10px); box-shadow: 0 15px 30px rgba(0,0,0,0.1); border-color: var(--primary-green); }
+        .card-header { background: var(--bg-dark); color: white; padding: 30px; text-align: center; }
+        .card-price { font-size: 2.5rem; color: var(--primary-gold); font-weight: bold; margin: 10px 0; }
+        .card-body { padding: 30px; }
+        .feature-list li { margin-bottom: 15px; list-style: none; display: flex; gap: 10px; }
+        .feature-list i { color: var(--primary-green); }
+
+        /* 2. 实盘账户表格 */
+        .portfolio-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .live-tag { background: red; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+        
+        .crypto-table { width: 100%; border-collapse: collapse; background: white; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        .crypto-table th { background: #f8f9fa; padding: 15px; text-align: left; border-bottom: 2px solid #eee; }
+        .crypto-table td { padding: 15px; border-bottom: 1px solid #eee; }
+        .pnl-pos { color: var(--primary-green); font-weight: bold; }
+        .pnl-neg { color: #d63031; font-weight: bold; }
+
+        /* 3. 会员专属内容 */
+        .content-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
+        .article-card { background: white; padding: 25px; border-radius: 8px; border: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
+        .article-info h3 { margin-bottom: 10px; color: var(--bg-dark); }
+        .article-meta { color: #999; font-size: 0.9rem; }
+        
+        /* 模糊锁定效果 */
+        .locked-content { filter: blur(4px); user-select: none; pointer-events: none; }
+        .lock-overlay { 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            background: rgba(255,255,255,0.6); z-index: 10;
+        }
+
+        /* 充值弹窗 */
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background: white; padding: 30px; border-radius: 8px; width: 400px; text-align: center; }
+
+    </style>
+</head>
+<body>
+
+    <!-- 1. 认证界面 (Login/Register) -->
+    <div id="auth-view">
+        <div class="auth-box">
+            <div style="font-size: 3rem; margin-bottom: 20px;">🌱</div>
+            <h2 id="auth-title">登录资产种植园</h2>
+            <form id="auth-form">
+                <input type="text" id="username" class="input-field" placeholder="用户名" required>
+                <input type="password" id="password" class="input-field" placeholder="密码" required>
+                <button type="submit" class="btn btn-gold" style="width: 100%;">进入系统</button>
+            </form>
+            <div class="auth-toggle" onclick="toggleAuth()">没有账号？注册新用户</div>
+        </div>
+    </div>
+
+    <!-- 2. 主应用界面 -->
+    <div id="app-view">
+        
+        <!-- 导航栏 -->
+        <header>
+            <div class="container nav-container">
+                <div class="logo">
+                    <span style="color:var(--primary-green)">🌱</span> 资产种植园
+                </div>
+                <nav class="nav-menu">
+                    <div class="nav-item active" onclick="switchTab('home')">首页 & 订阅</div>
+                    <div class="nav-item" onclick="switchTab('content')">会员专属内容</div>
+                    <div class="nav-item" onclick="switchTab('live')">实盘账户公开</div>
+                </nav>
+                <div class="user-panel">
+                    <span id="vip-badge" class="vip-badge">VIP 会员</span>
+                    <span id="display-username" style="font-weight: bold;">User</span>
+                    <span style="color:var(--primary-green)">$ <span id="display-balance">0.00</span></span>
+                    <button class="btn btn-outline" style="color:#333; border:1px solid #ddd; padding:5px 10px;" onclick="showRechargeModal()">充值</button>
+                    <button class="btn" style="color:#999" onclick="logout()"><i class="fas fa-sign-out-alt"></i></button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Tab 1: 首页 & 订阅 (Home) -->
+        <div id="tab-home" class="view-section">
+            <div class="hero-banner">
+                <h1 class="hero-title">财富种植园 <span>PLAN VIP</span> 策略</h1>
+                <p class="hero-subtitle">看清周期 • 纪律交易 • 远离 FOMO</p>
+                <div style="margin-top: 30px;">
+                    <button class="btn btn-gold hero-cta" onclick="scrollToPlans()">🚀 立即加入计划 VIP 策略 🚀</button>
+                </div>
+                <p style="margin-top: 15px; font-size: 0.8rem; color: #888;">点击按钮将安全跳转至专用结账页面</p>
+            </div>
+
+            <div class="container section-content" id="plans-area">
+                <h2 style="text-align: center; margin-bottom: 10px;">选择您的会员计划</h2>
+                <p style="text-align: center; color: #666;">解锁独家加密货币仓位与宏观分析</p>
+                
+                <div class="pricing-grid">
+                    <!-- 普通订阅 -->
+                    <div class="price-card">
+                        <div class="card-header">
+                            <h3>月度会员</h3>
+                            <div class="card-price">$499</div>
+                            <div>/ 月</div>
+                        </div>
+                        <div class="card-body">
+                            <ul class="feature-list">
+                                <li><i class="fas fa-check"></i> 查看实盘 BTC 仓位</li>
+                                <li><i class="fas fa-check"></i> 每周市场分析报告</li>
+                                <li><i class="fas fa-check"></i> 社区讨论权限</li>
+                            </ul>
+                            <button class="btn btn-gold" style="width:100%" onclick="buyVip(499)">订阅月卡</button>
+                        </div>
+                    </div>
+
+                    <!-- 年度订阅 -->
+                    <div class="price-card" style="border-color: var(--primary-gold); transform: scale(1.05);">
+                        <div class="card-header" style="background: linear-gradient(135deg, #00b894, #0b172a);">
+                            <div style="background:var(--primary-gold); color:black; display:inline-block; padding:2px 10px; border-radius:10px; font-size:0.8rem; margin-bottom:10px;">推荐</div>
+                            <h3>年度会员 VIP</h3>
+                            <div class="card-price">$3,999</div>
+                            <div>/ 年 (省 33%)</div>
+                        </div>
+                        <div class="card-body">
+                            <ul class="feature-list">
+                                <li><i class="fas fa-check"></i> <strong>实时</strong> 实盘操作通知</li>
+                                <li><i class="fas fa-check"></i> 解锁所有深度研报</li>
+                                <li><i class="fas fa-check"></i> 1对1 资产配置建议</li>
+                                <li><i class="fas fa-check"></i> 优先客服支持</li>
+                            </ul>
+                            <button class="btn btn-gold" style="width:100%" onclick="buyVip(3999)">订阅年卡</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 2: 会员专属内容 (Content) -->
+        <div id="tab-content" class="container view-section hidden section-content">
+            <h2 style="margin-bottom: 30px; border-left: 5px solid var(--primary-green); padding-left: 15px;">会员专属内参</h2>
+            
+            <div class="content-grid" id="content-list">
+                <!-- 内容由 JS 动态生成 -->
+            </div>
+        </div>
+
+        <!-- Tab 3: 实盘账户公开 (Live Portfolio) -->
+        <div id="tab-live" class="container view-section hidden section-content">
+            <div class="portfolio-header">
+                <h2 style="border-left: 5px solid var(--primary-gold); padding-left: 15px;">比特币/以太坊 实盘仓位</h2>
+                <span class="live-tag">LIVE MARKET</span>
+            </div>
+
+            <div id="portfolio-locked" class="hidden" style="text-align: center; padding: 50px; background: white; border-radius: 8px;">
+                <i class="fas fa-lock" style="font-size: 3rem; color: #ccc; margin-bottom: 20px;"></i>
+                <h3>此页面仅向 VIP 会员开放</h3>
+                <p style="margin-bottom: 20px; color: #666;">请升级您的订阅以查看我们的实时持仓数据。</p>
+                <button class="btn btn-gold" onclick="switchTab('home')">立即升级</button>
+            </div>
+
+            <div id="portfolio-view">
+                <div style="background: var(--bg-card); color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; display: flex; justify-content: space-between;">
+                    <div>
+                        <div style="color: #aaa; font-size: 0.9rem;">账户总净值 (USDT)</div>
+                        <div style="font-size: 2rem; font-weight: bold;">$ <span id="total-equity">1,245,678.00</span></div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="color: #aaa; font-size: 0.9rem;">今日盈亏</div>
+                        <div style="font-size: 1.5rem; color: var(--primary-green);">+$ 12,450.00 (+1.02%)</div>
+                    </div>
+                </div>
+
+                <table class="crypto-table">
+                    <thead>
+                        <tr>
+                            <th>标的</th>
+                            <th>方向</th>
+                            <th>开仓均价</th>
+                            <th>当前市价 (Live)</th>
+                            <th>持仓数量</th>
+                            <th>未结盈亏 (PnL)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="crypto-rows">
+                        <!-- JS 填充 -->
+                    </tbody>
+                </table>
+                <p style="margin-top: 15px; font-size: 0.8rem; color: #666;">* 数据延迟约 200ms。投资有风险，跟单需谨慎。</p>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- 充值弹窗 -->
+    <div id="recharge-modal" class="modal">
+        <div class="modal-content">
+            <h3>账户充值</h3>
+            <p style="color:#666; margin-bottom: 20px;">模拟系统，资金秒到账</p>
+            <input type="number" id="recharge-amount" class="input-field" placeholder="输入金额 (USDT)">
+            <div style="display: flex; gap: 10px;">
+                <button class="btn btn-outline" style="color:black; border-color:#ccc; flex:1;" onclick="closeModal()">取消</button>
+                <button class="btn btn-gold" style="flex:1;" onclick="handleRecharge()">确认充值</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. 数据库逻辑 (LocalStorage) ---
+        const DB_KEY = 'plantation_vip_db';
+
+        function getDB() {
+            const data = localStorage.getItem(DB_KEY);
+            return data ? JSON.parse(data) : { users: [] };
+        }
+        function saveDB(data) { localStorage.setItem(DB_KEY, JSON.stringify(data)); }
+
+        let currentUser = null;
+        let isRegister = false;
+
+        // --- 2. 认证逻辑 ---
+        function toggleAuth() {
+            isRegister = !isRegister;
+            document.getElementById('auth-title').innerText = isRegister ? '注册新用户' : '登录资产种植园';
+            document.querySelector('.auth-toggle').innerText = isRegister ? '已有账号？立即登录' : '没有账号？注册新用户';
+        }
+
+        document.getElementById('auth-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const u = document.getElementById('username').value;
+            const p = document.getElementById('password').value;
+            const db = getDB();
+
+            if (isRegister) {
+                if (db.users.find(user => user.username === u)) return alert('用户已存在');
+                const newUser = { username: u, password: p, balance: 0, isVip: false, vipExpire: null };
+                db.users.push(newUser);
+                saveDB(db);
+                currentUser = newUser;
+                loginSuccess();
+            } else {
+                const user = db.users.find(user => user.username === u && user.password === p);
+                if (user) {
+                    currentUser = user;
+                    loginSuccess();
+                } else {
+                    alert('账号或密码错误');
+                }
+            }
+        });
+
+        function loginSuccess() {
+            document.getElementById('auth-view').style.display = 'none';
+            document.getElementById('app-view').style.display = 'block';
+            updateUI();
+            startLivePrices(); // 开启行情跳动
+            renderContentList(); // 渲染文章
+        }
+
+        function logout() {
+            currentUser = null;
+            location.reload();
+        }
+
+        // --- 3. 核心业务逻辑 ---
+
+        function updateUI() {
+            document.getElementById('display-username').innerText = currentUser.username;
+            document.getElementById('display-balance').innerText = parseFloat(currentUser.balance).toFixed(2);
+            
+            // VIP 状态处理
+            const badge = document.getElementById('vip-badge');
+            const lockedPortfolio = document.getElementById('portfolio-locked');
+            const viewPortfolio = document.getElementById('portfolio-view');
+
+            if (currentUser.isVip) {
+                badge.classList.add('show');
+                lockedPortfolio.classList.add('hidden');
+                viewPortfolio.classList.remove('hidden');
+            } else {
+                badge.classList.remove('show');
+                lockedPortfolio.classList.remove('hidden');
+                viewPortfolio.classList.add('hidden');
+            }
+        }
+
+        function switchTab(tabId) {
+            // 隐藏所有
+            document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            
+            // 显示目标
+            document.getElementById('tab-' + tabId).classList.remove('hidden');
+            
+            // 高亮菜单 (简单索引匹配)
+            const map = { 'home': 0, 'content': 1, 'live': 2 };
+            document.querySelectorAll('.nav-item')[map[tabId]].classList.add('active');
+        }
+
+        function scrollToPlans() {
+            document.getElementById('plans-area').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // --- 4. 充值与购买 ---
+
+        function showRechargeModal() { document.getElementById('recharge-modal').style.display = 'flex'; }
+        function closeModal() { document.getElementById('recharge-modal').style.display = 'none'; }
+
+        function handleRecharge() {
+            const amt = parseFloat(document.getElementById('recharge-amount').value);
+            if (!amt || amt <= 0) return alert('请输入金额');
+            
+            currentUser.balance += amt;
+            saveUser();
+            updateUI();
+            closeModal();
+            alert(`充值 $${amt} 成功`);
+        }
+
+        function buyVip(price) {
+            if (currentUser.isVip) return alert('您已经是尊贵的 VIP 会员了');
+            if (currentUser.balance < price) {
+                alert('余额不足，请先充值');
+                showRechargeModal();
+                return;
+            }
+            if (confirm(`确认支付 $${price} 订阅会员？`)) {
+                currentUser.balance -= price;
+                currentUser.isVip = true;
+                saveUser();
+                updateUI();
+                alert('订阅成功！已解锁所有实盘数据和专属内容。');
+                renderContentList(); // 刷新内容状态
+                switchTab('live'); // 引导去看实盘
+            }
+        }
+
+        function saveUser() {
+            const db = getDB();
+            const idx = db.users.findIndex(u => u.username === currentUser.username);
+            db.users[idx] = currentUser;
+            saveDB(db);
+        }
+
+        // --- 5. 实盘行情模拟 (Real-time Simulation) ---
+
+        const positions = [
+            { asset: 'BTC/USDT', type: '做多 (Long)', entry: 64500, size: 2.5 },
+            { asset: 'ETH/USDT', type: '做多 (Long)', entry: 3450, size: 20 },
+            { asset: 'SOL/USDT', type: '做空 (Short)', entry: 148, size: 150 }
+        ];
+
+        function startLivePrices() {
+            // 每秒更新一次价格
+            setInterval(() => {
+                const tbody = document.getElementById('crypto-rows');
+                let html = '';
+                let totalPnL = 0;
+
+                positions.forEach(pos => {
+                    // 模拟价格波动
+                    const volatility = pos.entry * 0.002; // 0.2% 波动
+                    const currentPrice = pos.entry + (Math.random() * volatility * (Math.random() > 0.5 ? 1 : -1));
+                    
+                    // 计算 PnL
+                    let pnl = 0;
+                    if (pos.type.includes('Long')) {
+                        pnl = (currentPrice - pos.entry) * pos.size;
+                    } else {
+                        pnl = (pos.entry - currentPrice) * pos.size;
+                    }
+                    totalPnL += pnl;
+
+                    const pnlClass = pnl >= 0 ? 'pnl-pos' : 'pnl-neg';
+                    const sign = pnl >= 0 ? '+' : '';
+
+                    html += `
+                        <tr>
+                            <td style="font-weight:bold">${pos.asset}</td>
+                            <td style="color:${pos.type.includes('Long')?'var(--primary-green)':'red'}">${pos.type}</td>
+                            <td>$${pos.entry.toLocaleString()}</td>
+                            <td style="font-weight:bold">$${currentPrice.toFixed(2).toLocaleString()}</td>
+                            <td>${pos.size}</td>
+                            <td class="${pnlClass}">${sign}$${pnl.toFixed(2)}</td>
+                        </tr>
+                    `;
+                });
+                tbody.innerHTML = html;
+            }, 1000);
+        }
+
+        // --- 6. 内容解锁逻辑 ---
+
+        const articles = [
+            { title: "2025 Q3 比特币减半后的宏观走势推演", date: "2025-10-24", isFree: false },
+            { title: "实盘复盘：为什么我们在 64000 选择了加仓？", date: "2025-10-23", isFree: false },
+            { title: "公开课：新手如何配置第一笔加密资产", date: "2025-10-20", isFree: true },
+            { title: "内部预警：山寨币季节可能提前结束的信号", date: "2025-10-18", isFree: false }
+        ];
+
+        function renderContentList() {
+            const container = document.getElementById('content-list');
+            let html = '';
+            
+            articles.forEach(art => {
+                const isLocked = !art.isFree && !currentUser.isVip;
+                
+                let lockOverlay = '';
+                let blurClass = '';
+                
+                if (isLocked) {
+                    blurClass = 'locked-content';
+                    lockOverlay = `
+                        <div class="lock-overlay">
+                            <i class="fas fa-lock" style="font-size:2rem; color:var(--bg-dark); margin-bottom:10px;"></i>
+                            <button class="btn btn-gold" onclick="switchTab('home')">订阅 VIP 解锁全文</button>
+                        </div>
+                    `;
+                }
+
+                html += `
+                    <div class="article-card" style="position:relative; overflow:hidden;">
+                        <div class="article-info ${blurClass}">
+                            <h3>${art.title}</h3>
+                            <div class="article-meta">发布于 ${art.date} • ${art.isFree ? '公开' : 'VIP 专享'}</div>
+                            <p style="color:#666; margin-top:10px;">这里是文章的摘要部分，包含了一些关键的市场分析数据和图表...</p>
+                        </div>
+                        <div class="${blurClass}">
+                            <button class="btn btn-outline" style="color:var(--bg-dark); border-color:#ccc;">阅读全文</button>
+                        </div>
+                        ${lockOverlay}
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+    </script>
+</body>
+</html>
